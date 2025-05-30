@@ -303,6 +303,7 @@ namespace sealtest
             }
             {
                 // Use a very large scale
+                double delta = pow(2.0, 110);
                 int data_bound = (1 << 20);
                 Plaintext plain;
                 vector<complex<double>> result;
@@ -310,7 +311,7 @@ namespace sealtest
                 for (int iRun = 0; iRun < 50; iRun++)
                 {
                     int value = static_cast<int>(rand() % data_bound);
-                    encoder.encode(value, context.first_parms_id(), plain);
+                    encoder.encode(value, context.first_parms_id(), delta, plain);
                     encoder.decode(plain, result);
 
                     for (size_t i = 0; i < slots; ++i)
@@ -322,6 +323,7 @@ namespace sealtest
             }
             {
                 // Use a scale over 128 bits
+                double delta = pow(2.0, 130);
                 int data_bound = (1 << 20);
                 Plaintext plain;
                 vector<complex<double>> result;
@@ -329,7 +331,7 @@ namespace sealtest
                 for (int iRun = 0; iRun < 50; iRun++)
                 {
                     int value = static_cast<int>(rand() % data_bound);
-                    encoder.encode(value, context.first_parms_id(), plain);
+                    encoder.encode(value, context.first_parms_id(), delta, plain);
                     encoder.decode(plain, result);
 
                     for (size_t i = 0; i < slots; ++i)

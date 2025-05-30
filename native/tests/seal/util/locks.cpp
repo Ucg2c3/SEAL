@@ -3,6 +3,7 @@
 
 #include "seal/util/locks.h"
 #include <atomic>
+#include <chrono>
 #include <thread>
 #include "gtest/gtest.h"
 
@@ -125,6 +126,8 @@ namespace sealtest
 
         TEST(ReaderWriterLockerTests, ReaderWriterLockNonBlocking)
         {
+            using namespace std::chrono_literals;
+
             ReaderWriterLocker locker;
 
             WriterLock writeLock = locker.acquire_write();

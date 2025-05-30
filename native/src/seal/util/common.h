@@ -516,8 +516,9 @@ namespace seal
             }
 #ifdef SEAL_DEBUG
             throw std::invalid_argument("hex");
-#endif
+#else
             return -1;
+#endif
         }
 
         SEAL_NODISCARD inline int get_hex_string_bit_count(const char *hex_string, int char_count)

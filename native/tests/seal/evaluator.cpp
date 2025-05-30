@@ -2530,6 +2530,7 @@ namespace sealtest
         evaluator.square_inplace(encrypted);
         evaluator.relinearize_inplace(encrypted, rlk);
         decryptor.decrypt(encrypted, plain2);
+        std::cout << plain2.to_string() << std::endl;
         ASSERT_TRUE(plain == plain2);
 
         encryptor.encrypt(plain, encrypted);

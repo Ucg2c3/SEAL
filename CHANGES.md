@@ -1,5 +1,11 @@
 # List of Changes
 
+## Version 4.1.3
+
+- Merged [(PR #729)](https://github.com/microsoft/SEAL/pull/729): Updated `zlib` and `zstd` versions.
+- Updated Intel HEXL, Google Benchmark, GTest, MSGSL dependency versions.
+- Updated Blake2xb and Shake256 implementations (courtesy of [https://github.com/BLAKE2/BLAKE2](https://github.com/BLAKE2/BLAKE2) and [https://github.com/pq-crystals/kyber](https://github.com/pq-crystals/kyber/), respectively).
+
 ## Version 4.1.2
 
 - Merged [(PR #619)](https://github.com/microsoft/SEAL/pull/619): Removed unqualified calls to `std::move`.
