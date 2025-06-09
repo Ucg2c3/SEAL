@@ -278,7 +278,7 @@ namespace sealtest
         {
             size_t slots = 32;
             parms.set_poly_modulus_degree(slots << 1);
-            parms.set_coeff_modulus(CoeffModulus::Create(slots << 1, { 40, 40, 40, 40 }));
+            parms.set_coeff_modulus(CoeffModulus::Create(slots << 1, { 40, 40, 40, 40, 40 }));
             SEALContext context(parms, false, sec_level_type::none);
             CKKSEncoder encoder(context);
 
