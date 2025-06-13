@@ -27,7 +27,7 @@ jobs:
     pool:
       vmImage: 'ubuntu-latest'
     steps:
-    - template: nix.yml
+    - template: linux.yml
       parameters:
         artifactName: linux-drop
         ${{ if eq(parameters.debug, 'true') }}:
@@ -41,7 +41,7 @@ jobs:
     pool:
       vmImage: 'macos-latest'
     steps:
-    - template: nix.yml
+    - template: macos.yml
       parameters:
         artifactName: macos-drop
         ${{ if eq(parameters.debug, 'true') }}:

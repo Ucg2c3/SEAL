@@ -4,8 +4,27 @@
      Licensed under the MIT license. -->
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- For iOS devices (arm64) we need to statically link libsealc.a and libseal.a -->
   <ItemGroup Condition="'$(RuntimeIdentifier)' == 'ios-arm64'">
     <NativeLibrary Include="runtimes/ios-arm64/native/libsealc.a"
+                  Kind="Static"
+                  ForceLoad="True"
+                  IsCxx="True" />
+    <NativeLibrary Include="runtimes/ios-arm64/native/libseal.a"
+                  Kind="Static"
+                  ForceLoad="True"
+                  IsCxx="True" />
+  </ItemGroup>
+
+  <!-- For iOS simulator (arm64 and x64) we choose to also statically link libsealc.a and libseal.a,
+       although this is not technically necessary. We use a combined archive for x64 and arm64. -->
+  <ItemGroup Condition="$([System.String]::Copy($(RuntimeIdentifier)).StartsWith('iossimulator'))">
+    <NativeLibrary Include="runtimes/iossimulator/native/libsealc.a"
+                  Kind="Static"
+                  ForceLoad="True"
+                  IsCxx="True" />
+    <NativeLibrary Include="runtimes/iossimulator/native/libseal.a"
                   Kind="Static"
                   ForceLoad="True"
                   IsCxx="True" />

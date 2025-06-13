@@ -10,7 +10,7 @@ namespace Microsoft.Research.SEAL
     [Guid("A7AAD62F-3A48-4188-B6C3-523C294CFDAD")]
     static class NativeMethods
     {
-#if __IOS__
+#if IOS
         private const string sealc = "__Internal";
 #else
         private const string sealc = "sealc";

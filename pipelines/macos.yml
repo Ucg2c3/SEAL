@@ -1,0 +1,69 @@
+steps:
+- task: CMake@1
+  displayName: 'Configure SEAL (CMake)'
+  inputs:
+    workingDirectory: '$(Build.SourcesDirectory)'
+    cmakeArgs: >
+      -S .
+      -B build
+      -GXcode
+      -DCMAKE_BUILD_TYPE=${{ parameters.configuration }}
+      -DSEAL_BUILD_TESTS=ON
+      -DSEAL_BUILD_SEAL_C=ON
+      -DSEAL_BUILD_EXAMPLES=ON
+
+- script: |
+    cmake --build build \
+          --config ${{ parameters.configuration }} \
+          -- -arch x86_64
+    mkdir -p $BUILD_SOURCESDIRECTORY/lib/osx-x64
+    cp build/lib/${{ parameters.configuration }}/libsealc.dylib $BUILD_SOURCESDIRECTORY/lib/osx-x64/
+  displayName: 'Build SEAL native (x86_64)'
+
+- script: |
+    cmake --build build \
+          --config ${{ parameters.configuration }} \
+          -- -arch arm64
+    mkdir -p $BUILD_SOURCESDIRECTORY/lib/osx-arm64
+    cp build/lib/${{ parameters.configuration }}/libsealc.dylib $BUILD_SOURCESDIRECTORY/lib/osx-arm64
+  displayName: 'Build SEAL native (arm64)'
+
+- script: |
+      cd $BUILD_SOURCESDIRECTORY/lib
+      echo Creating fat library
+      lipo -create -output libsealc.dylib osx-x64/libsealc.dylib osx-arm64/libsealc.dylib
+
+      echo Architectures for libsealc.dylib
+      lipo -info libsealc.dylib
+  displayName: 'Create fat dylib'
+
+- script: |
+      cd $BUILD_SOURCESDIRECTORY
+      LD_PRELOAD=libasan.so ./build/bin/${{ parameters.configuration }}/sealtest
+  displayName: 'Run unit tests'
+
+- task: UseDotNet@2
+  displayName: 'Get .NET 8.0 SDK'
+  inputs:
+    packageType: 'sdk'
+    version: '8.0.x'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Run dotnet unit tests'
+  inputs:
+    command: test
+    projects: '**/SEALNetTest.csproj'
+    arguments: '--configuration ${{ parameters.configuration }} --verbosity detailed'
+
+- task: CopyFiles@2
+  displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
+  inputs:
+      SourceFolder: '$(Build.SourcesDirectory)/lib'
+      Contents: 'libsealc.*'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)/lib'
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: drop'
+  inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      artifactName: ${{ parameters.artifactName }}
