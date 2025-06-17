@@ -26,19 +26,19 @@ steps:
     workingDirectory: '$(Build.SourcesDirectory)'
     cmakeArgs: '--version'
 
-- task: PowerShell@2
-  displayName: Download Ninja
-  inputs:
-    targetType: 'inline'
-    script: |
-      # Download Ninja
-      $ToolsDirectory = Join-Path -Path $Env:BUILD_SOURCESDIRECTORY -ChildPath tools
-      $NinjaZipFile = Join-Path $ToolsDirectory -ChildPath ninja.zip
-      $NinjaExeFile = Join-Path $ToolsDirectory -ChildPath ninja.exe
+# - task: PowerShell@2
+#   displayName: Download Ninja
+#   inputs:
+#     targetType: 'inline'
+#     script: |
+#       # Download Ninja
+#       $ToolsDirectory = Join-Path -Path $Env:BUILD_SOURCESDIRECTORY -ChildPath tools
+#       $NinjaZipFile = Join-Path $ToolsDirectory -ChildPath ninja.zip
+#       $NinjaExeFile = Join-Path $ToolsDirectory -ChildPath ninja.exe
 
-      Invoke-WebRequest -Uri "https://github.com/ninja-build/ninja/releases/download/v1.12.1/ninja-win.zip" -OutFile $NinjaZipFile
-      Expand-Archive -Path $NinjaZipFile -DestinationPath $ToolsDirectory
-      Copy-Item -Path $NinjaExeFile -Destination "c:/Program Files/CMake/bin"
+#       Invoke-WebRequest -Uri "https://github.com/ninja-build/ninja/releases/download/v1.12.1/ninja-win.zip" -OutFile $NinjaZipFile
+#       Expand-Archive -Path $NinjaZipFile -DestinationPath $ToolsDirectory
+#       Copy-Item -Path $NinjaExeFile -Destination "c:/Program Files/CMake/bin"
 
 - task: Gradle@2
   displayName: Compile Android Native Libraries
