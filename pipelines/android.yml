@@ -21,7 +21,7 @@ steps:
     options: '--stacktrace --no-parallel'
     publishJUnitResults: false
     testResultsFiles: '**/TEST-*.xml'
-    tasks: 'compileReleaseSources'
+    tasks: 'build'
 
 - task: PowerShell@2
   displayName: Copy binary files to staging directory
