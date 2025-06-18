@@ -10,8 +10,7 @@ steps:
       -DSEAL_BUILD_SEAL_C=ON
       -DSEAL_BUILD_STATIC_SEAL_C=ON
       -DCMAKE_SYSTEM_NAME=iOS
-      -DCMAKE_OSX_ARCHITECTURES=x86_64
-      --trace
+      "-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
 
 - task: CMake@1
   displayName: 'Configure SEAL for arm64'
@@ -24,9 +23,8 @@ steps:
       -DSEAL_BUILD_SEAL_C=ON
       -DSEAL_BUILD_STATIC_SEAL_C=ON
       -DCMAKE_SYSTEM_NAME=iOS
-      -DCMAKE_OSX_ARCHITECTURES=arm64
+      "-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
       -C cmake/functions.ios-arm64.cmake
-      --trace
 
 - script: |
       cd $BUILD_SOURCESDIRECTORY
