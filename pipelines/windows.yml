@@ -17,6 +17,13 @@ steps:
     version: '8.0.x'
     installationPath: $(Agent.ToolsDirectory)/dotnet
 
+- task: DotNetCoreCLI@2
+  displayName: "Install .NET iOS workflow"
+  inputs:
+    command: 'custom'
+    custom: 'workload'
+    arguments: 'install ios'
+
 - task: CMake@1
   displayName: 'Configure SEAL'
   inputs:
