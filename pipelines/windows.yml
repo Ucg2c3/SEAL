@@ -50,17 +50,17 @@ steps:
     configuration: ${{ parameters.configuration }}
     diagnosticsEnabled: True
 
-- ${{ if eq(parameters.configuration, 'Release') }}:
-  # - task: PowerShell@2
-  #   displayName: 'Download Strong Name certificate'
-  #   inputs:
-  #     targetType: 'inline'
-  #     script: |
-  #         # Get signing certificate
-  #         $CertOutFile = Join-Path -Path $env:BUILD_SOURCESDIRECTORY -ChildPath build\dotnet\src\SEALNetCert.snk
-  #         if (Test-Path env:SEALNetSigningCertificate) {
-  #             Invoke-WebRequest -Uri "$env:SEALNetSigningCertificate" -OutFile $CertOutFile
-  #         }
+# - ${{ if eq(parameters.configuration, 'Release') }}:
+#   - task: PowerShell@2
+#     displayName: 'Download Strong Name certificate'
+#     inputs:
+#       targetType: 'inline'
+#       script: |
+#           # Get signing certificate
+#           $CertOutFile = Join-Path -Path $env:BUILD_SOURCESDIRECTORY -ChildPath build\dotnet\src\SEALNetCert.snk
+#           if (Test-Path env:SEALNetSigningCertificate) {
+#               Invoke-WebRequest -Uri "$env:SEALNetSigningCertificate" -OutFile $CertOutFile
+#           }
 
 - task: NuGetCommand@2
   displayName: 'NuGet restore from Solution'
