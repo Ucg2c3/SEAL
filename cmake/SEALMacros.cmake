@@ -111,3 +111,8 @@ macro(seal_set_secure_compile_options target scope)
         target_link_options(${target} ${scope} /DYNAMICBASE)
     endif()
 endmacro()
+
+macro(seal_add_debug_compile_definition target)
+    target_compile_definitions(${target}
+        PUBLIC $<$<CONFIG:Debug>:SEAL_DEBUG>)
+endmacro()

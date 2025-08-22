@@ -3,7 +3,7 @@
 
 include(CheckCXXCompilerFlag)
 
-# For easier adding of CXX compiler flags
+# For easier adding of CXX compiler flags.
 function(seal_enable_cxx_compiler_flag_if_supported flag)
     string(FIND "${CMAKE_CXX_FLAGS}" "${flag}" flag_already_set)
     if(flag_already_set EQUAL -1)
@@ -17,6 +17,7 @@ function(seal_enable_cxx_compiler_flag_if_supported flag)
 endfunction()
 
 if(NOT MSVC AND SEAL_DEBUG)
+    # This only works with single-configuration generators.
     seal_enable_cxx_compiler_flag_if_supported("-Wall")
     seal_enable_cxx_compiler_flag_if_supported("-Wextra")
     seal_enable_cxx_compiler_flag_if_supported("-Wconversion")

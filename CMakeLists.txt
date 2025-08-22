@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.13)
 
 # Allow using old style FetchContent_Populate pattern.
-if (POLICY CMP0169)
+if(POLICY CMP0169)
     cmake_policy(SET CMP0169 OLD)
 endif()
 
@@ -16,19 +16,23 @@ endif()
 #   4. SEAL C++ tests                             #
 ###################################################
 
+project(SEAL VERSION 4.2.0 LANGUAGES CXX C)
+
 # [option] CMAKE_BUILD_TYPE (default: "Release")
-# Build in one of the following modes: Release, Debug, MiniSizeRel, or RelWithDebInfo.
+# Build in one of the following modes: Release, Debug, MinSizeRel, or RelWithDebInfo.
 # Most generators recognize these and can set the compiler flags accordingly. We set
 # the build type here before creating the project to prevent the CMake generator from
 # overriding our default of "Release".
-if(NOT CMAKE_BUILD_TYPE)
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type" FORCE)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY
         STRINGS "Release" "Debug" "MinSizeRel" "RelWithDebInfo")
 endif()
-message(STATUS "Build type (CMAKE_BUILD_TYPE): ${CMAKE_BUILD_TYPE}")
-
-project(SEAL VERSION 4.2.0 LANGUAGES CXX C)
+if(CMAKE_CONFIGURATION_TYPES)
+    message(STATUS "Multi-config generator detected. Configurations: ${CMAKE_CONFIGURATION_TYPES}")
+else()
+    message(STATUS "Build type (CMAKE_BUILD_TYPE): ${CMAKE_BUILD_TYPE}")
+endif()
 
 ########################
 # Global configuration #
@@ -47,21 +51,33 @@ include(CheckSymbolExists)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 include(SEALMacros)
 
-# Always build position-independent-code
+# Always build position-independent-code.
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-# Make the install target depend on the all target (required by vcpkg)
+# Make the install target depend on the all target (required by vcpkg).
 set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY OFF)
 
-# In Debug mode, define SEAL_DEBUG
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(SEAL_DEBUG ON)
-    # In Debug mode, enable extra compiler flags.
-    include(EnableCXXCompilerFlags)
+# For Debug builds, define SEAL_DEBUG
+if(NOT CMAKE_CONFIGURATION_TYPES)
+    # Set SEAL_DEBUG per CMAKE_BUILD_TYPE for single-configuration generators.
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(SEAL_DEBUG ON)
+    else()
+        set(SEAL_DEBUG OFF)
+    endif()
+    message(STATUS "Microsoft SEAL debug mode: ${SEAL_DEBUG}")
 else()
-    set(SEAL_DEBUG OFF)
+    # For multi-configuration generators, unset SEAL_DEBUG. Instead, set it as
+    # a compile-time define for debug builds only. In this case, to use SEAL internal 
+    # API in debug mode, downstream applications must compile with -DSEAL_DEBUG.
+    # This is because many header files use SEAL_DEBUG to determine their behavior.
+    unset(SEAL_DEBUG)
+
+    # We set the compile-time definitions later when the targets are defined.
 endif()
-message(STATUS "Microsoft SEAL debug mode: ${SEAL_DEBUG}")
+
+# In Debug mode, enable extra compiler flags.
+include(EnableCXXCompilerFlags)
 
 # [option] SEAL_USE_CXX17 (default: ON)
 # Use C++17, use C++14 otherwise.
@@ -108,10 +124,18 @@ set(SEAL_CONFIG_VERSION_FILENAME ${CMAKE_CURRENT_BINARY_DIR}/cmake/SEALConfigVer
 set(SEAL_CONFIG_H_FILENAME ${CMAKE_CURRENT_BINARY_DIR}/native/src/seal/util/config.h)
 set(SEAL_THIRDPARTY_DIR ${CMAKE_CURRENT_BINARY_DIR}/thirdparty)
 
-# If we are on a multi-config generator, set these paths additionally.
 if(CMAKE_CONFIGURATION_TYPES)
+    # If we are on a multi-config generator, set these paths additionally.
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/Debug)
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/Release)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release)
+else()
+    # Otherwise, set them anyway but point to the same location.
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 endif()
 
 # Install
@@ -235,7 +259,7 @@ if(SEAL_USE_INTEL_HEXL)
         seal_fetch_thirdparty_content(ExternalIntelHEXL)
     else()
         find_package(HEXL 1)
-        if (NOT TARGET HEXL::hexl)
+        if(NOT TARGET HEXL::hexl)
             message(FATAL_ERROR "Intel HEXL: not found")
         endif()
     endif()
@@ -319,6 +343,9 @@ if(NOT BUILD_SHARED_LIBS)
     seal_set_version_filename(seal)
     seal_set_language(seal)
     seal_set_include_directories(seal)
+    if(CMAKE_CONFIGURATION_TYPES)
+        seal_add_debug_compile_definition(seal)
+    endif()
     seal_set_version(seal)
     seal_link_threads(seal)
     seal_install_target(seal SEALTargets)
@@ -360,7 +387,7 @@ if(NOT BUILD_SHARED_LIBS)
                 $<BUILD_INTERFACE:$<TARGET_PROPERTY:HEXL::hexl,INTERFACE_INCLUDE_DIRECTORIES>>)
             target_compile_options(seal PRIVATE $<TARGET_PROPERTY:HEXL::hexl,INTERFACE_COMPILE_OPTIONS>)
             get_target_property(HEXL_INTERFACE_LINK_OPTIONS HEXL::hexl INTERFACE_LINK_OPTIONS)
-            if (NOT "${HEXL_INTERFACE_LINK_OPTIONS}" STREQUAL "HEXL_INTERFACE_LINK_OPTIONS-NOTFOUND")
+            if(NOT "${HEXL_INTERFACE_LINK_OPTIONS}" STREQUAL "HEXL_INTERFACE_LINK_OPTIONS-NOTFOUND")
                 target_link_libraries(seal INTERFACE ${HEXL_INTERFACE_LINK_OPTIONS})
             endif()
             seal_combine_archives(seal HEXL::hexl)
@@ -381,6 +408,9 @@ else()
     set_target_properties(seal_shared PROPERTIES OUTPUT_NAME seal)
     seal_set_language(seal_shared)
     seal_set_include_directories(seal_shared)
+    if(CMAKE_CONFIGURATION_TYPES)
+        seal_add_debug_compile_definition(seal_shared)
+    endif()
     seal_set_version(seal_shared)
     seal_link_threads(seal_shared)
     seal_install_target(seal_shared SEALTargets)
@@ -409,7 +439,7 @@ else()
         target_link_libraries(seal_shared PRIVATE HEXL::hexl)
         target_compile_options(seal_shared PRIVATE $<TARGET_PROPERTY:HEXL::hexl,INTERFACE_COMPILE_OPTIONS>)
         get_target_property(HEXL_INTERFACE_LINK_OPTIONS HEXL::hexl INTERFACE_LINK_OPTIONS)
-        if (NOT "${HEXL_INTERFACE_LINK_OPTIONS}" STREQUAL "HEXL_INTERFACE_LINK_OPTIONS-NOTFOUND")
+        if(NOT "${HEXL_INTERFACE_LINK_OPTIONS}" STREQUAL "HEXL_INTERFACE_LINK_OPTIONS-NOTFOUND")
             target_link_libraries(seal_shared INTERFACE ${HEXL_INTERFACE_LINK_OPTIONS})
         endif()
 
@@ -463,9 +493,14 @@ if(SEAL_BUILD_SEAL_C)
         message(FATAL_ERROR "SEAL_C requires `SEAL_BUILD_DEPS=ON`")
     endif()
 
-    if(NOT SEAL_BUILD_STATIC_SEAL_C AND SEAL_USE_INTEL_HEXL AND CMAKE_BUILD_TYPE STREQUAL "Debug" AND UNIX)
-        message(WARNING "SEAL_C (shared) cannot find Address Sanitizer (libasan) enabled by Intel HEXL in Debug mode "
-                        "on Unix-like systems. SEALNet does not work. Preload libasan for downstream applications.")
+    # Preconditions that don't depend on the config:
+    if(UNIX AND SEAL_USE_INTEL_HEXL AND NOT SEAL_BUILD_STATIC_SEAL_C)
+        # Emit warning at build-time only for Debug
+        add_custom_command(TARGET sealc POST_BUILD
+            COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> -E cmake_echo_color --yellow --bold
+                    "[SEAL WARNING] SEAL_C (shared) cannot find Address Sanitizer (libasan) enabled by Intel HEXL in Debug "
+                    "mode on Unix-like systems. SEALNet does not work. Preload libasan for downstream applications."
+            COMMAND_EXPAND_LISTS)
     endif()
 
     if(SEAL_BUILD_STATIC_SEAL_C)
@@ -484,7 +519,10 @@ if(SEAL_BUILD_SEAL_C)
     endif()
     seal_set_language(sealc)
     seal_set_include_directories(sealc)
-    if (SEAL_USE_INTEL_HEXL)
+    if(CMAKE_CONFIGURATION_TYPES)
+        seal_add_debug_compile_definition(sealc)
+    endif()
+    if(SEAL_USE_INTEL_HEXL)
         target_include_directories(sealc PRIVATE $<BUILD_INTERFACE:${hexl_SOURCE_DIR}/hexl/include>)
     endif()
 
@@ -514,7 +552,7 @@ install(
     NAMESPACE SEAL::
     DESTINATION ${SEAL_CONFIG_INSTALL_DIR})
 
-# Version file; we require exact version match for downstream
+# Version file; we require minor version match for compatibility
 write_basic_package_version_file(
     ${SEAL_CONFIG_VERSION_FILENAME}
     VERSION ${SEAL_VERSION}
@@ -644,17 +682,6 @@ endif()
 # Configure SEALNet and NuGet package #
 #######################################
 
-# In Windows we will set the SEAL_C library path according to the CMake generator
-set(SEAL_WINDOWS_SEAL_C_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-get_property(SEAL_IS_MULTI_CONFIG_GENERATOR GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
-if(SEAL_IS_MULTI_CONFIG_GENERATOR)
-    # Is this the Visual Studio generator? If so, the output path will contain the configuration.
-    # We shall use CMAKE_BUILD_TYPE here, which by default will be "Release". The user has the
-    # option of changing this by explicitly specifying CMAKE_BUILD_TYPE, which multi-config
-    # generators otherwise ignore.
-    set(SEAL_WINDOWS_SEAL_C_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_BUILD_TYPE})
-endif()
-
 # Create SEALNet.csproj, SEALNetExamples.csproj, and SEALNetTest.csproj
 configure_file(
     ${CMAKE_CURRENT_LIST_DIR}/dotnet/src/SEALNet.csproj.in
@@ -691,28 +718,17 @@ set(NUGET_LINUX_SEAL_C_PATH "")
 set(NUGET_MACOS_X64_SEAL_C_PATH "")
 set(NUGET_MACOS_ARM64_SEAL_C_PATH "")
 
-# Supporting local building of NuGet package
+# Supporting local building of NuGet package. For the NuGet package
+# we alway use a release build for the native library.
 if(WIN32)
-    set(NUGET_WINDOWS_SEAL_C_PATH ${SEAL_WINDOWS_SEAL_C_DIRECTORY}/sealc.dll)
+    set(NUGET_WINDOWS_SEAL_C_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE}/sealc.dll)
 elseif(UNIX AND NOT APPLE)
-    set(NUGET_LINUX_SEAL_C_PATH ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libsealc.so)
+    set(NUGET_LINUX_SEAL_C_PATH ${CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE}/libsealc.so)
 elseif(APPLE)
-    # Depending on whether we are on x64 or ARM64, we will set the path to the
-    # dynamic library to be included in the NuGet package.
     if(CMAKE_OSX_ARCHITECTURES MATCHES "arm64")
-        if(CMAKE_CONFIGURATION_TYPES)
-            # Multi-config generator, e.g., Xcode
-            set(NUGET_MACOS_ARM64_SEAL_C_PATH ${CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE}/libsealc.dylib)
-        else()
-            set(NUGET_MACOS_ARM64_SEAL_C_PATH ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libsealc.dylib)
-        endif()
+        set(NUGET_MACOS_ARM64_SEAL_C_PATH ${CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE}/libsealc.dylib)
     else()
-        if(CMAKE_CONFIGURATION_TYPES)
-            # Multi-config generator, e.g., Xcode
-            set(NUGET_MACOS_X64_SEAL_C_PATH ${CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE}/libsealc.dylib)
-        else()
-            set(NUGET_MACOS_X64_SEAL_C_PATH ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libsealc.dylib)
-        endif()
+        set(NUGET_MACOS_X64_SEAL_C_PATH ${CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE}/libsealc.dylib)
     endif()
 endif()
 

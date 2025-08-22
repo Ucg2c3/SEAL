@@ -27,17 +27,24 @@
     <ProjectReference Include="$(ProjectDir)../src/SEALNet.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition="$([MSBuild]::IsOsPlatform(Windows))">
-    <SEALCBinaryFiles Include="@SEAL_WINDOWS_SEAL_C_DIRECTORY@\sealc.dll" />
-  </ItemGroup>
-  <ItemGroup Condition="$([MSBuild]::IsOsPlatform(Linux))">
-    <SEALCBinaryFiles Include="@CMAKE_LIBRARY_OUTPUT_DIRECTORY@/libsealc.so*" />
-  </ItemGroup>
-  <ItemGroup Condition="$([MSBuild]::IsOsPlatform(OSX)) And '$(Configuration)'=='Release'">
-    <SEALCBinaryFiles Include="@CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE@/libsealc*.dylib" />
-  </ItemGroup>
-  <ItemGroup Condition="$([MSBuild]::IsOsPlatform(OSX)) And '$(Configuration)'=='Debug'">
-    <SEALCBinaryFiles Include="@CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG@/libsealc*.dylib" />
+  <PropertyGroup>
+    <!-- The library directory is set by CMake for Debug and Release configurations -->
+    <SealcOutDir Condition="'$(Configuration)'=='Release'">@CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE@</SealcOutDir>
+    <SealcOutDir Condition="'$(Configuration)'=='Debug'">@CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG@</SealcOutDir>
+    <SealcOutDir Condition="'$(SealcOutDir)'==''">@CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE@</SealcOutDir>
+  
+    <!-- The filename pattern depends on the OS -->
+    <SealcPattern Condition="$([MSBuild]::IsOsPlatform(Windows))">sealc.dll</SealcPattern>
+    <SealcPattern Condition="$([MSBuild]::IsOsPlatform(Linux))">libsealc.so*</SealcPattern>
+    <SealcPattern Condition="$([MSBuild]::IsOsPlatform(OSX))">libsealc*.dylib</SealcPattern>
+  
+    <!-- Portable separator for subdirectories -->
+    <DS>$([System.IO.Path]::DirectorySeparatorChar)</DS>
+  </PropertyGroup>
+
+  <!-- Include the native library -->
+  <ItemGroup>
+    <SEALCBinaryFiles Include="$(SealcOutDir)$(DS)$(SealcPattern)" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">

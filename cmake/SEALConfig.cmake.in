@@ -13,8 +13,9 @@
 #   SEAL_VERSION_MAJOR : The major version number
 #   SEAL_VERSION_MINOR : The minor version number
 #   SEAL_VERSION_PATCH : The patch version number
-#   SEAL_DEBUG : Set to non-zero value if library is compiled with extra debugging code (very slow!)
-#   SEAL_BUILD_TYPE : The build type (e.g., "Release" or "Debug")
+#   SEAL_MULTICONFIG_GENERATOR : Set to non-zero value if SEAL was configured with a multi-config generator.
+#   SEAL_BUILD_TYPE : The build type (e.g., "Release" or "Debug"); not set if SEAL_MULTICONFIG_GENERATOR is set.
+#   SEAL_DEBUG : Set to non-zero value if library is compiled with extra debugging code (very slow!); not set if SEAL_MULTICONFIG_GENERATOR is set.
 #
 #   SEAL_USE_CXX17 : Set to non-zero value if library is compiled as C++17 instead of C++14
 #   SEAL_USE_STD_FOR_EACH_N : Set to non-zero value if library uses std::for_each_n for SEAL_ITERATE
@@ -59,8 +60,15 @@ set(SEAL_VERSION @SEAL_VERSION@)
 set(SEAL_VERSION_MAJOR @SEAL_VERSION_MAJOR@)
 set(SEAL_VERSION_MINOR @SEAL_VERSION_MINOR@)
 set(SEAL_VERSION_PATCH @SEAL_VERSION_PATCH@)
-set(SEAL_DEBUG @SEAL_DEBUG@)
-set(SEAL_BUILD_TYPE @CMAKE_BUILD_TYPE@)
+if("@CMAKE_CONFIGURATION_TYPES@" STREQUAL "")
+    set(SEAL_MULTICONFIG_GENERATOR OFF)
+    set(SEAL_BUILD_TYPE @CMAKE_BUILD_TYPE@)
+    set(SEAL_DEBUG @SEAL_DEBUG@)
+else()
+    set(SEAL_MULTICONFIG_GENERATOR ON)
+    unset(SEAL_BUILD_TYPE)
+    unset(SEAL_DEBUG)
+endif()
 
 set(SEAL_USE_CXX17 @SEAL_USE_CXX17@)
 set(SEAL_USE_STD_FOR_EACH_N @SEAL_USE_STD_FOR_EACH_N@)
