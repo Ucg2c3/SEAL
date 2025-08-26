@@ -718,8 +718,8 @@ set(NUGET_LINUX_SEAL_C_PATH "")
 set(NUGET_MACOS_X64_SEAL_C_PATH "")
 set(NUGET_MACOS_ARM64_SEAL_C_PATH "")
 
-# Supporting local building of NuGet package. For the NuGet package
-# we alway use a release build for the native library.
+# Supporting local building of multi-platform NuGet package. For the NuGet
+# package we alway use a release build for the native library.
 if(WIN32)
     set(NUGET_WINDOWS_SEAL_C_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE}/sealc.dll)
 elseif(UNIX AND NOT APPLE)

@@ -7,23 +7,6 @@ For more information about the Microsoft SEAL project, see [sealcrypto.org](http
 This document pertains to Microsoft SEAL version 4.2.
 Users of previous versions of the library should look at the [list of changes](CHANGES.md).
 
-## News
-
-The [BGV scheme](https://eprint.iacr.org/2011/277) is now available in Microsoft SEAL.
-Implementation details are described in [this paper](https://eprint.iacr.org/2020/1481.pdf).
-We truly appreciate [Alibaba Gemini Lab](https://alibaba-gemini-lab.github.io/) for making massive efforts to develop the BGV scheme and integrate it in Microsoft SEAL. And we would like to thank Privacy Technologies Research, Intel Labs, for continuous testing and reporting issues.
-
-Starting from version 3.7.2, Microsoft SEAL will push new changes to the `main`, `master`, and `contrib` branches without creating a new version.
-We adopt this approach to merge community contribution and resolve issues in a timely manner.
-These branches will stay ahead of the latest version branch/tag.
-New versions will be created when there are important bug fixes or new features.
-
-The [EVA compiler for CKKS](https://arxiv.org/abs/1912.11951) is available at [GitHub.com/Microsoft/EVA](https://GitHub.com/Microsoft/EVA). See [CKKS Programming with EVA](#ckks-programming-with-eva) below for more information.
-
-The [SEAL-Embedded for CKKS Encryption](https://tches.iacr.org/index.php/TCHES/article/view/8991) is available at [Github.com/Microsoft/SEAL-Embedded](https://github.com/microsoft/SEAL-Embedded).
-
-The [APSI library for Asymmetric PSI](https://eprint.iacr.org/2021/1116) is available at [Github.com/Microsoft/APSI](https://github.com/microsoft/APSI).
-
 ## Contents
 
 - [Introduction](#introduction)
@@ -131,12 +114,12 @@ The optional dependencies and their tested versions (other versions may work as 
 
 | Optional dependency                                    | Tested version | Use                                              |
 | ------------------------------------------------------ | -------------- | ------------------------------------------------ |
-| [Intel HEXL](https://github.com/intel/hexl)            | 1.2.5          | Acceleration of low-level kernels                |
-| [Microsoft GSL](https://github.com/microsoft/GSL)      | 4.0.0          | API extensions                                   |
+| [Intel HEXL](https://github.com/intel/hexl)            | 1.2.6          | Acceleration of low-level kernels                |
+| [Microsoft GSL](https://github.com/microsoft/GSL)      | 4.2.0          | API extensions                                   |
 | [ZLIB](https://github.com/madler/zlib)                 | 1.3.1          | Compressed serialization                         |
 | [Zstandard](https://github.com/facebook/zstd)          | 1.5.7          | Compressed serialization (much faster than ZLIB) |
-| [GoogleTest](https://github.com/google/googletest)     | 1.12.1         | For running tests                                |
-| [GoogleBenchmark](https://github.com/google/benchmark) | 1.7.1          | For running benchmarks                           |
+| [GoogleTest](https://github.com/google/googletest)     | 1.16.0         | For running tests                                |
+| [GoogleBenchmark](https://github.com/google/benchmark) | 1.9.2          | For running benchmarks                           |
 
 #### Intel HEXL
 
@@ -221,18 +204,6 @@ To build the examples, see [Examples, Tests, and Benchmark](#examples-tests-and-
 They are designed to provide the reader with the necessary conceptual background on homomorphic encryption.
 Reusing code directly from the examples will not work well, as the examples are often demonstrating individual pieces of functionality, and are not optimized for performance.
 Writing Microsoft SEAL code without studying the examples in depth will inevitably result in code that is vulnerable, malfunctioning, or extremely slow.
-
-### CKKS Programming with EVA
-
-When studying the examples above, it will become clear that the CKKS scheme can be unfriendly to beginners.
-Even relatively simple computations can be challenging to get to work due to the limitations of the rescaling operation and the requirement of aligning scales at different levels.
-
-We have created a new compiler tool called EVA that helps resolve these challenges to a large extent.
-EVA allows programmers to express desired encrypted computations in Python. It optimizes the computations for Microsoft SEAL, selects appropriate encryption parameters, and provides a convenient Python API for encrypting the input, executing the computation, and decrypting the result.
-EVA is available at [GitHub.com/Microsoft/EVA](https://GitHub.com/Microsoft/EVA).
-Try it out, and let us know what you think!
-
-**Note:** EVA only supports the CKKS scheme. There are no immediate plans to support the BFV or BGV scheme.
 
 ## Building Microsoft SEAL Manually
 
@@ -331,7 +302,7 @@ To build the library for iOS, use the following scripts:
 
 ```PowerShell
 # Configure CMake
-cmake -S . -B build -GXcode -DSEAL_BUILD_SEAL_C=ON -DSEAL_BUILD_STATIC_SEAL_C=ON -DCMAKE_SYSTEM_NAME=iOS "-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64" -C cmake/memset_s.iOS.cmake
+cmake -S . -B build -GXcode -DSEAL_BUILD_SEAL_C=ON -DSEAL_BUILD_STATIC_SEAL_C=ON -DCMAKE_SYSTEM_NAME=iOS "-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64" -C cmake/functions.ios.cmake
 
 # Build libseal*.a for x86_64
 xcodebuild -project build/SEAL.xcodeproj -sdk iphonesimulator -arch x86_64 -configuration Release clean build
@@ -396,7 +367,7 @@ emcc \
  -Wall \
  -flto \
  -O3 \
- build/lib/libseal-4.1.a \
+ build/lib/libseal-4.2.a \
  --bind \
  -o "build/bin/seal_wasm.js" \
  -s WASM=1 \
@@ -550,7 +521,7 @@ To cite Microsoft SEAL in academic papers, please use the following BibTeX entri
     @misc{sealcrypto,
         title = {{M}icrosoft {SEAL} (release 4.2)},
         howpublished = {\url{https://github.com/Microsoft/SEAL}},
-        month = jul,
+        month = sep,
         year = 2025,
         note = {Microsoft Research, Redmond, WA.},
         key = {SEAL}

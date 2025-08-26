@@ -41,7 +41,7 @@
     
   <!-- Override original target -->
   <PropertyGroup Condition="'$(BuildIOS)' != ''">
-    <TargetFramework>net8.0-ios</TargetFramework>
+    <TargetFramework>net8.0-ios11.0</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>

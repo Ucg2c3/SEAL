@@ -17,14 +17,14 @@ nuget pack SEALNet.nuspec -properties Configuration=Release -Verbosity detailed 
 cd ..\..
 ````
 
-After the package is created, copy it from `dotnet\nuget\Release` to a known location (e.g., `C:\NuGetPackages`).
+After the package is created, copy it from `dotnet\nuget\Release` to your local NuGet package directory.
 
 To add a reference to the NuGet package, you will need to configure Visual Studio so it can find
 packages in this known location. In Microsoft Visual Studio 2022, for example, you can:
 1. Select the menu uption `Tools / Options...`
 2. On the left pane of the Options dialog, navigate to `NuGet Package Manager / Package Sources`
 3. On the right pane of the Options dialog, add a new package source that points to the directory
-   where you copied the NuGet package (e.g., `C:\NuGetPackages`)
+   where you copied the NuGet package.
 
 After this, you should be able to add a reference to this package in your own .NET project. After
 creating or opening your project in Visual Studio, you can right click on the project in the

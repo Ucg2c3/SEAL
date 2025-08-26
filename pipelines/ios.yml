@@ -59,8 +59,8 @@ steps:
       mkdir -p $BUILD_SOURCESDIRECTORY/lib/ios
 
       echo Copying arm64 libraries from build-arm64/lib/${{ parameters.configuration }}/
-      cp build-arm64/lib/${{ parameters.configuration }}/libseal-4.2.a $BUILD_SOURCESDIRECTORY/lib/ios/libseal.a
-      cp build-arm64/lib/${{ parameters.configuration }}/libsealc-4.2.a $BUILD_SOURCESDIRECTORY/lib/ios/libsealc.a
+      cp build-arm64/lib/${{ parameters.configuration }}/libseal-*.a $BUILD_SOURCESDIRECTORY/lib/ios/libseal.a
+      cp build-arm64/lib/${{ parameters.configuration }}/libsealc-*.a $BUILD_SOURCESDIRECTORY/lib/ios/libsealc.a
   displayName: 'Build SEAL for iOS (arm64)'
 
 - task: CopyFiles@2
