@@ -530,7 +530,7 @@ The SEAL_C library is meant to be used only by the .NET library, not by end-user
 
 #### Windows, Linux, and macOS
 
-For compiling .NET code you will need to install a [.NET SDK (>= 8.0)](https://dotnet.microsoft.com/download).
+For compiling .NET code you will need to install a [.NET SDK (>= 10.0)](https://dotnet.microsoft.com/download).
 Building the SEAL_C library with CMake will generate project files for the .NET wrapper library, examples, and unit tests.
 The SEAL_C library must be discoverable when running a .NET application, e.g., be present in the same directory as your executable, which is taken care of by the .NET examples and tests project files.
 Run the following scripts to build each project:
