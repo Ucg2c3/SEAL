@@ -47,7 +47,8 @@ namespace sealbench
 
             switch (parms.scheme())
             {
-            case scheme_type::bfv: {
+            case scheme_type::bfv:
+            {
                 bm_env->randomize_pt_bfv(pt);
                 encryptor->encrypt(pt, ct_a);
                 encryptor->encrypt(pt, ct_b);
@@ -55,9 +56,14 @@ namespace sealbench
                 decryptor->decrypt(ct_a, pt_out);
                 evaluator->add(ct_a, ct_b, ct_dest);
                 evaluator->multiply(ct_a, ct_b, ct_dest);
+                if (context.using_keyswitching())
+                {
+                    evaluator->relinearize_inplace(ct_dest, bm_env->rlk());
+                }
                 break;
             }
-            case scheme_type::bgv: {
+            case scheme_type::bgv:
+            {
                 bm_env->randomize_pt_bgv(pt);
                 encryptor->encrypt(pt, ct_a);
                 encryptor->encrypt(pt, ct_b);
@@ -65,9 +71,14 @@ namespace sealbench
                 decryptor->decrypt(ct_a, pt_out);
                 evaluator->add(ct_a, ct_b, ct_dest);
                 evaluator->multiply(ct_a, ct_b, ct_dest);
+                if (context.using_keyswitching())
+                {
+                    evaluator->relinearize_inplace(ct_dest, bm_env->rlk());
+                }
                 break;
             }
-            case scheme_type::ckks: {
+            case scheme_type::ckks:
+            {
                 vector<double> msg;
                 bm_env->randomize_message_double(msg);
                 bm_env->ckks_encoder()->encode(msg, bm_env->safe_scale(), pt);
@@ -77,15 +88,14 @@ namespace sealbench
                 decryptor->decrypt(ct_a, pt_out);
                 evaluator->add(ct_a, ct_b, ct_dest);
                 evaluator->multiply(ct_a, ct_b, ct_dest);
+                if (context.using_keyswitching())
+                {
+                    evaluator->relinearize_inplace(ct_dest, bm_env->rlk());
+                }
                 break;
             }
             default:
                 break;
-            }
-
-            if (context.using_keyswitching())
-            {
-                evaluator->relinearize_inplace(ct_dest, bm_env->rlk());
             }
         }
     }
@@ -224,22 +234,23 @@ int main(int argc, char **argv)
     // remaining arguments to google-benchmark, which would otherwise warn about
     // an unknown flag. Disabling warmup is useful when measuring cold-start cost.
     bool run_warmup = true;
-    for (int i = 1; i < argc; ++i)
+    for (int i = 1; i < argc; i++)
     {
         if (string(argv[i]) == "--no-warmup")
         {
             run_warmup = false;
-            for (int j = i; j < argc - 1; ++j)
+            for (int j = i; j < argc - 1; j++)
             {
                 argv[j] = argv[j + 1];
             }
             argv[argc - 1] = nullptr;
-            --argc;
-            --i;
+            argc--;
+            i--;
         }
     }
 
     Initialize(&argc, argv);
+    benchmark::AddCustomContext("Warmup", run_warmup ? "enabled" : "disabled");
 
     cout << "Microsoft SEAL version: " << SEAL_VERSION << endl;
     cout << "Running precomputations ..." << endl;
@@ -291,13 +302,13 @@ int main(int argc, char **argv)
     cout << "[" << setw(7) << right << (seal::MemoryManager::GetPool().alloc_byte_count() >> 20) << " MB] "
          << "Total allocation from the memory pool" << endl;
 
-    // Warm up the major SEAL kernels so that the first timed benchmark batch is not 2-6x slower than
-    // subsequent batches due to cold instruction cache, page faults, and uninitialized memory pool.
-    // See https://github.com/microsoft/SEAL/issues/625. Pass --no-warmup to skip this and measure
-    // the cold-start path instead.
+    // Exercise the main SEAL kernels once before the timed cases run, so that the first batch is
+    // not penalized by cold-start costs (instruction cache misses, first-touch page faults, and an
+    // empty SEAL memory pool) relative to subsequent batches. Skip this with --no-warmup to
+    // measure the cold-start path instead.
     if (run_warmup)
     {
-        cout << "Running warmup pass ..." << endl;
+        cout << "Running warmup pass (disable with `--no-warmup`) ..." << endl;
         sealbench::warmup_family(bm_env_map);
     }
 

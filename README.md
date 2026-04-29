@@ -114,11 +114,11 @@ The optional dependencies and their tested versions (other versions may work as 
 | Optional dependency                                    | Tested version | Use                                              |
 | ------------------------------------------------------ | -------------- | ------------------------------------------------ |
 | [Intel HEXL](https://github.com/intel/hexl)            | 1.2.6          | Acceleration of low-level kernels                |
-| [Microsoft GSL](https://github.com/microsoft/GSL)      | 4.2.0          | API extensions                                   |
-| [ZLIB](https://github.com/madler/zlib)                 | 1.3.1          | Compressed serialization                         |
+| [Microsoft GSL](https://github.com/microsoft/GSL)      | 4.2.1          | API extensions                                   |
+| [ZLIB](https://github.com/madler/zlib)                 | 1.3.2          | Compressed serialization                         |
 | [Zstandard](https://github.com/facebook/zstd)          | 1.5.7          | Compressed serialization (much faster than ZLIB) |
-| [GoogleTest](https://github.com/google/googletest)     | 1.16.0         | For running tests                                |
-| [GoogleBenchmark](https://github.com/google/benchmark) | 1.9.2          | For running benchmarks                           |
+| [GoogleTest](https://github.com/google/googletest)     | 1.17.0         | For running tests                                |
+| [GoogleBenchmark](https://github.com/google/benchmark) | 1.9.5          | For running benchmarks                           |
 
 #### Intel HEXL
 
@@ -172,6 +172,7 @@ cd vcpkg
 ./bootstrap-vcpkg.sh  # ./bootstrap-vcpkg.bat for Windows
 ./vcpkg integrate install
 ./vcpkg install seal
+# Optional features can be selected with `seal[<feature>,...]`; see the `seal` port (its `vcpkg.json` manifest and `portfile.cmake`) for the full feature list.
 ```
 
 The "seal" port in vcpkg is kept up to date by Microsoft team members and community contributors.
@@ -515,6 +516,9 @@ cmake --build build
 By default, benchmarks run for a vector of parameters and primitives, which can be overwhelmingly informative.
 To execute a subset of benchmark cases, see [Google Benchmark README](https://github.com/google/benchmark/blob/master/README.md#running-a-subset-of-benchmarks).
 For advanced users, the `bm_parms_vec` variable in [native/bench/bench.cpp](native/bench/bench.cpp) can be overwritten with custom parameter sets.
+
+Before the timed cases run, `sealbench` performs a warmup pass (one encrypt/decrypt/add/multiply per scheme, plus relinearize when key-switching is enabled, plus a CKKS encode) to prime the instruction cache and the SEAL memory pool.
+To include cold-start effects into the performance results, pass `--no-warmup` to the benchmark binary; the resulting state is recorded in benchmark output as a custom context entry (`Warmup: enabled` or `Warmup: disabled`).
 
 **Note**: The benchmark code is strictly for experimental purposes; it allows insecure parameters that must not be used in real applications.
 Do not follow the benchmarks as examples.

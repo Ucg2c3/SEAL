@@ -1,5 +1,10 @@
 # List of Changes
 
+## Version 4.3.1
+
+- Merged [(PR #740)](https://github.com/microsoft/SEAL/pull/740): Removed the version restriction on `find_package(HEXL)`, which was incompatible with HEXL's exact-version `HEXLConfigVersion.cmake`.
+- Merged [(PR #741)](https://github.com/microsoft/SEAL/pull/741): Added a warmup pass to `sealbench` to eliminate an observed slowdown due to cold instruction cache, page faults, and an uninitialized memory pool ([issue #625](https://github.com/microsoft/SEAL/issues/625)).
+
 ## Version 4.3.0
 
 - Merged [(PR #734)](https://github.com/microsoft/SEAL/pull/734): Fixed `IterTuple` constructors that returned references to local temporaries.
